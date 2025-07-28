@@ -5,17 +5,17 @@
 }
 
 :root {
-    --primary-color: #3b82f6;
-    --secondary-color: #64748b;
-    --accent-color: #f97316;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --error-color: #ef4444;
-    --background-color: #f8fafc;
-    --surface-color: #ffffff;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --border-color: #e2e8f0;
+  --primary-color: #c7531f;       /* Bold burnt orange */
+  --secondary-color: #006c6e;     /* Deep teal/cyan */
+  --accent-color: #c7531f;        /* Same as primary for consistent highlight */
+  --success-color: #10b981;       /* (Leave default green) */
+  --warning-color: #f59e0b;       /* (Leave default amber) */
+  --error-color: #ef4444;         /* (Leave default red) */
+  --background-color: #f8fafc;    /* Soft light grey-white */
+  --surface-color: #ffffff;       /* Clean white surfaces */
+  --text-primary: #1e293b;        /* Dark slate grey/blue */
+  --text-secondary: #64748b;      /* Muted greyish-blue as fallback */
+  --border-color: #e2e8f0;        /* Subtle light grey border */
   .header-actions {
     display: flex;
     gap: 12px;
