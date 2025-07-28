@@ -5,17 +5,17 @@
 }
 
 :root {
-  --primary-color: #c7531f;       /* Bold burnt orange */
-  --secondary-color: #006c6e;     /* Deep teal/cyan */
-  --accent-color: #c7531f;        /* Same as primary for consistent highlight */
-  --success-color: #10b981;       /* (Leave default green) */
-  --warning-color: #f59e0b;       /* (Leave default amber) */
-  --error-color: #ef4444;         /* (Leave default red) */
-  --background-color: #f8fafc;    /* Soft light grey-white */
+ --primary-color: #006c6e;       /* Deep teal/cyan (dominant color) */
+  --secondary-color: #64748b;     /* Muted slate (unchanged) */
+  --accent-color: #c7531f;        /* Bold burnt orange (highlight/accent) */
+  --success-color: #10b981;       /* Success green */
+  --warning-color: #f59e0b;       /* Warning amber */
+  --error-color: #ef4444;         /* Error red */
+  --background-color: #f8fafc;    /* Light grey-white */
   --surface-color: #ffffff;       /* Clean white surfaces */
-  --text-primary: #1e293b;        /* Dark slate grey/blue */
-  --text-secondary: #64748b;      /* Muted greyish-blue as fallback */
-  --border-color: #e2e8f0;        /* Subtle light grey border */
+  --text-primary: #1e293b;        /* Dark slate for base text */
+  --text-secondary: #64748b;      /* Muted blue-grey for secondary text */
+  --border-color: #e2e8f0;        /* Light border grey */
   .header-actions {
     display: flex;
     gap: 12px;
