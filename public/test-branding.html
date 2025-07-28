@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Branding System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .logo-preview {
+            max-width: 200px;
+            max-height: 100px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+        }
+        .color-box {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ddd;
+            display: inline-block;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Branding System Test</h1>
+    
+    <div class="test-section info">
+        <h3>📋 Test Status</h3>
+        <div id="status">Ready to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>🏢 Company Branding</h3>
+        <button onclick="testBrandingAPI()">Test Branding API</button>
+        <button onclick="loadBranding()">Load Current Branding</button>
+        <div id="branding-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>👥 Employee Profiles</h3>
+        <button onclick="testEmployeeProfiles()">Test Employee Profiles API</button>
+        <button onclick="loadEmployeeProfiles()">Load Employee Profiles</button>
+        <div id="profiles-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Leads Integration</h3>
+        <button onclick="testLeadsAPI()">Test Enhanced Leads API</button>
+        <button onclick="loadLeadsStats()">Load Leads Statistics</button>
+        <div id="leads-result"></div>
+    </div>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<span class="${type}">${message}</span>`;
+        }
+
+        async function testBrandingAPI() {
+            updateStatus('Testing branding API...', 'info');
+            try {
+                // Test GET branding
+                const response = await fetch('/api/branding');
+                const data = await response.json();
+                
+                document.getElementById('branding-result').innerHTML = `
+                    <h4>✅ Branding API Response:</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                updateStatus('Branding API test completed!', 'success');
+            } catch (caughtError) {
+                document.getElementById('branding-result').innerHTML = `
+                    <h4>❌ Error:</h4>
+                    <pre>${caughtError.message}</pre>
+                `;
+                updateStatus('Branding API test failed!', 'error');
+            }
+        }
+
+        async function loadBranding() {
+            try {
+                const response = await fetch('/api/branding');
+                const branding = await response.json();
+                
+                let html = '<h4>🎨 Current Branding:</h4>';
+                
+                if (branding.logo_url) {
+                    html += `<img src="${branding.logo_url}" alt="Logo" class="logo-preview">`;
+                }
+                
+                html += `
+                    <div>
+                        <strong>Colors:</strong><br>
+                        Primary: <span class="color-box" style="background: ${branding.primary_color || '#ec4899'}"></span> ${branding.primary_color || '#ec4899'}<br>
+                        Secondary: <span class="color-box" style="background: ${branding.secondary_color || '#64748b'}"></span> ${branding.secondary_color || '#64748b'}<br>
+                        Accent: <span class="color-box" style="background: ${branding.accent_color || '#f97316'}"></span> ${branding.accent_color || '#f97316'}
+                    </div>
+                `;
+                
+                document.getElementById('branding-result').innerHTML = html;
+            } catch (caughtError) {
+                document.getElementById('branding-result').innerHTML = `<p>❌ Error: ${caughtError.message}</p>`;
+            }
+        }
+
+        async function testEmployeeProfiles() {
+            updateStatus('Testing employee profiles API...', 'info');
+            try {
+                const response = await fetch('/api/branding/employee-profiles');
+                const data = await response.json();
+                
+                document.getElementById('profiles-result').innerHTML = `
+                    <h4>✅ Employee Profiles API Response:</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                updateStatus('Employee profiles API test completed!', 'success');
+            } catch (caughtError) {
+                document.getElementById('profiles-result').innerHTML = `
+                    <h4>❌ Error:</h4>
+                    <pre>${caughtError.message}</pre>
+                `;
+                updateStatus('Employee profiles API test failed!', 'error');
+            }
+        }
+
+        async function loadEmployeeProfiles() {
+            try {
+                const response = await fetch('/api/branding/employee-profiles');
+                const profiles = await response.json();
+                
+                let html = '<h4>👥 Employee Profiles:</h4>';
+                
+                if (profiles.length === 0) {
+                    html += '<p>No employee profiles found.</p>';
+                } else {
+                    profiles.forEach(profile => {
+                        html += `
+                            <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                                <strong>Employee ID:</strong> ${profile.employee_id}<br>
+                                ${profile.profile_picture_url ? 
+                                    `<img src="${profile.profile_picture_url}" alt="Profile" style="width: 50px; height: 50px; border-radius: 50%; margin: 5px 0;">` : 
+                                    'No profile picture'
+                                }
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('profiles-result').innerHTML = html;
+            } catch (caughtError) {
+                document.getElementById('profiles-result').innerHTML = `<p>❌ Error: ${caughtError.message}</p>`;
+            }
+        }
+
+        async function testLeadsAPI() {
+            updateStatus('Testing enhanced leads API...', 'info');
+            try {
+                const response = await fetch('/api/leads?limit=5');
+                const data = await response.json();
+                
+                document.getElementById('leads-result').innerHTML = `
+                    <h4>✅ Enhanced Leads API Response:</h4>
+                    <p><strong>Total Leads:</strong> ${data.total || 0}</p>
+                    <p><strong>Sample Leads:</strong> ${data.leads ? data.leads.length : 0}</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                updateStatus('Enhanced leads API test completed!', 'success');
+            } catch (caughtError) {
+                document.getElementById('leads-result').innerHTML = `
+                    <h4>❌ Error:</h4>
+                    <pre>${caughtError.message}</pre>
+                `;
+                updateStatus('Enhanced leads API test failed!', 'error');
+            }
+        }
+
+        async function loadLeadsStats() {
+            try {
+                const response = await fetch('/api/leads/statistics');
+                const stats = await response.json();
+                
+                let html = '<h4>📊 Leads Statistics:</h4>';
+                html += `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        <div style="padding: 10px; background: #f8f9fa; border-radius: 4px; text-align: center;">
+                            <strong>${stats.total || 0}</strong><br>
+                            <small>Total Leads</small>
+                        </div>
+                        <div style="padding: 10px; background: #f8f9fa; border-radius: 4px; text-align: center;">
+                            <strong>${stats.validated || 0}</strong><br>
+                            <small>Validated</small>
+                        </div>
+                        <div style="padding: 10px; background: #f8f9fa; border-radius: 4px; text-align: center;">
+                            <strong>${stats.outreach_sent || 0}</strong><br>
+                            <small>Contacted</small>
+                        </div>
+                        <div style="padding: 10px; background: #f8f9fa; border-radius: 4px; text-align: center;">
+                            <strong>${stats.converted || 0}</strong><br>
+                            <small>Converted</small>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('leads-result').innerHTML = html;
+            } catch (caughtError) {
+                document.getElementById('leads-result').innerHTML = `<p>❌ Error: ${caughtError.message}</p>`;
+            }
+        }
+
+        // Auto-load on page load
+        window.addEventListener('load', () => {
+            updateStatus('Page loaded. Ready to test branding system!', 'success');
+        });
+    </script>
+</body>
+</html>

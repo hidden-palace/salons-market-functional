@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Logo Upload Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { background: #d4edda; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .info { background: #d1ecf1; border-left: 4px solid #17a2b8; }
+        
+        .file-input {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .file-input:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        
+        .preview-container {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .preview-image {
+            max-width: 200px;
+            max-height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        .specs-table th, .specs-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .specs-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .log-container {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-info { background: #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Logo Upload Debug Tool</h1>
+    
+    <div class="debug-section info">
+        <h3>📋 Current Logo Upload Specifications</h3>
+        <table class="specs-table">
+            <tr>
+                <th>Property</th>
+                <th>Requirement</th>
+                <th>Your File</th>
+                <th>Status</th>
+            </tr>
+            <tr>
+                <td><strong>File Format</strong></td>
+                <td>PNG, JPEG, SVG</td>
+                <td id="file-format">-</td>
+                <td id="format-status">-</td>
+            </tr>
+            <tr>
+                <td><strong>File Size</strong></td>
+                <td>Max 2MB (2,097,152 bytes)</td>
+                <td id="file-size">-</td>
+                <td id="size-status">-</td>
+            </tr>
+            <tr>
+                <td><strong>Min Dimensions</strong></td>
+                <td>200×50px minimum</td>
+                <td id="file-dimensions">-</td>
+                <td id="dimensions-status">-</td>
+            </tr>
+            <tr>
+                <td><strong>Recommended</strong></td>
+                <td>SVG for scalability</td>
+                <td id="file-recommendation">-</td>
+                <td id="recommendation-status">-</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="debug-section">
+        <h3>🔍 File Validation Test</h3>
+        <div class="file-input">
+            <input type="file" id="logo-test" accept=".png,.jpg,.jpeg,.svg" style="display: none;">
+            <button onclick="document.getElementById('logo-test').click()">Select Logo File</button>
+            <p>Click to select a logo file for validation testing</p>
+        </div>
+        
+        <div id="preview-container" class="preview-container" style="display: none;">
+            <h4>📸 File Preview & Analysis</h4>
+            <img id="preview-image" class="preview-image" alt="Logo preview">
+            <div id="file-analysis"></div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🚀 Upload Test</h3>
+        <button id="test-upload" onclick="testUpload()" disabled>Test Upload to Server</button>
+        <button onclick="testAPIConnection()">Test API Connection</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+        
+        <div id="upload-logs" class="log-container">
+            <div>🔧 Debug logs will appear here...</div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🎯 Current Sidebar Logo Status</h3>
+        <button onclick="checkCurrentLogo()">Check Current Logo</button>
+        <button onclick="testSidebarDisplay()">Test Sidebar Display</button>
+        
+        <div id="sidebar-status">
+            <p>Click "Check Current Logo" to see the current sidebar logo status</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let validationResults = {};
+
+        // Log function
+        function log(message, type = 'info') {
+            const logs = document.getElementById('upload-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logs.innerHTML += `<div>[${timestamp}] ${icon} ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('upload-logs').innerHTML = '<div>🔧 Debug logs cleared...</div>';
+        }
+
+        // File selection handler
+        document.getElementById('logo-test').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            selectedFile = file;
+            log(`File selected: ${file.name} (${file.size} bytes, ${file.type})`);
+            
+            validateFile(file);
+            previewFile(file);
+        });
+
+        function validateFile(file) {
+            validationResults = {};
+            
+            // Format validation
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+            const formatValid = allowedTypes.includes(file.type);
+            validationResults.format = formatValid;
+            
+            document.getElementById('file-format').textContent = file.type;
+            document.getElementById('format-status').innerHTML = formatValid ? 
+                '<span class="status-indicator status-success"></span>Valid' : 
+                '<span class="status-indicator status-error"></span>Invalid';
+
+            // Size validation
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            const sizeValid = file.size <= maxSize;
+            validationResults.size = sizeValid;
+            
+            document.getElementById('file-size').textContent = `${file.size} bytes (${(file.size / 1024 / 1024).toFixed(2)}MB)`;
+            document.getElementById('size-status').innerHTML = sizeValid ? 
+                '<span class="status-indicator status-success"></span>Valid' : 
+                '<span class="status-indicator status-error"></span>Too large';
+
+            // Recommendation
+            const isSVG = file.type === 'image/svg+xml';
+            document.getElementById('file-recommendation').textContent = isSVG ? 'SVG (Recommended)' : 'Raster image';
+            document.getElementById('recommendation-status').innerHTML = isSVG ? 
+                '<span class="status-indicator status-success"></span>Optimal' : 
+                '<span class="status-indicator status-info"></span>Good';
+
+            log(`Format validation: ${formatValid ? 'PASS' : 'FAIL'} (${file.type})`, formatValid ? 'success' : 'error');
+            log(`Size validation: ${sizeValid ? 'PASS' : 'FAIL'} (${(file.size / 1024 / 1024).toFixed(2)}MB)`, sizeValid ? 'success' : 'error');
+
+            // Enable upload test if basic validations pass
+            document.getElementById('test-upload').disabled = !(formatValid && sizeValid);
+            
+            if (formatValid && sizeValid) {
+                log('✅ File validation passed - upload button enabled', 'success');
+            } else {
+                log('❌ File validation failed - fix issues to enable upload', 'error');
+            }
+        }
+
+        function previewFile(file) {
+            const previewContainer = document.getElementById('preview-container');
+            const previewImage = document.getElementById('preview-image');
+            const analysisDiv = document.getElementById('file-analysis');
+
+            if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewImage.onload = function() {
+                        const width = this.naturalWidth;
+                        const height = this.naturalHeight;
+                        
+                        // Dimension validation
+                        const minWidth = 200;
+                        const minHeight = 50;
+                        const dimensionsValid = width >= minWidth && height >= minHeight;
+                        validationResults.dimensions = dimensionsValid;
+                        
+                        document.getElementById('file-dimensions').textContent = `${width}×${height}px`;
+                        document.getElementById('dimensions-status').innerHTML = dimensionsValid ? 
+                            '<span class="status-indicator status-success"></span>Valid' : 
+                            '<span class="status-indicator status-error"></span>Too small';
+
+                        analysisDiv.innerHTML = `
+                            <p><strong>Dimensions:</strong> ${width}×${height}px</p>
+                            <p><strong>Aspect Ratio:</strong> ${(width/height).toFixed(2)}:1</p>
+                            <p><strong>File Name:</strong> ${file.name}</p>
+                        `;
+
+                        log(`Dimensions: ${width}×${height}px (${dimensionsValid ? 'PASS' : 'FAIL'})`, dimensionsValid ? 'success' : 'error');
+                        
+                        // Update upload button state
+                        const allValid = validationResults.format && validationResults.size && validationResults.dimensions;
+                        document.getElementById('test-upload').disabled = !allValid;
+                    };
+                };
+                reader.readAsDataURL(file);
+            } else if (file.type === 'image/svg+xml') {
+                previewImage.src = URL.createObjectURL(file);
+                analysisDiv.innerHTML = `
+                    <p><strong>Format:</strong> SVG (Vector)</p>
+                    <p><strong>File Name:</strong> ${file.name}</p>
+                    <p><strong>Note:</strong> SVG dimensions will be validated server-side</p>
+                `;
+                
+                // For SVG, assume dimensions are valid for client-side testing
+                validationResults.dimensions = true;
+                document.getElementById('file-dimensions').textContent = 'Vector (scalable)';
+                document.getElementById('dimensions-status').innerHTML = '<span class="status-indicator status-success"></span>Scalable';
+                
+                const allValid = validationResults.format && validationResults.size;
+                document.getElementById('test-upload').disabled = !allValid;
+            }
+
+            previewContainer.style.display = 'block';
+        }
+
+        async function testUpload() {
+            if (!selectedFile) {
+                log('No file selected for upload test', 'error');
+                return;
+            }
+
+            log('Starting upload test...', 'info');
+            
+            const formData = new FormData();
+            formData.append('logo', selectedFile);
+
+            try {
+                const response = await fetch('/api/storage/logo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Upload successful!', 'success');
+                    log(`Logo URL: ${result.logo_url}`, 'success');
+                    
+                    // Test sidebar display
+                    setTimeout(() => {
+                        testSidebarDisplay();
+                    }, 1000);
+                } else {
+                    log(`❌ Upload failed: ${result.error}`, 'error');
+                    log(`Details: ${result.details}`, 'error');
+                    if (result.context) {
+                        log(`Context: ${JSON.stringify(result.context)}`, 'error');
+                    }
+                }
+            } catch (caughtError) {
+                log(`❌ Upload error: ${caughtError.message}`, 'error');
+                console.error('Full caughtError:', caughtError);
+            }
+        }
+
+        async function testAPIConnection() {
+            log('Testing API connection...', 'info');
+            
+            try {
+                const response = await fetch('/api/branding');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    log('✅ API connection successful', 'success');
+                    log(`Current branding data: ${JSON.stringify(result)}`, 'info');
+                } else {
+                    log(`❌ API connection failed: ${response.status}`, 'error');
+                }
+            } catch (caughtError) {
+                log(`❌ API connection error: ${caughtError.message}`, 'error');
+            }
+        }
+
+        async function checkCurrentLogo() {
+            log('Checking current logo status...', 'info');
+            
+            try {
+                const response = await fetch('/api/branding');
+                const branding = await response.json();
+                
+                const statusDiv = document.getElementById('sidebar-status');
+                
+                if (branding.logo_url) {
+                    statusDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Logo Found</h4>
+                            <p><strong>URL:</strong> ${branding.logo_url}</p>
+                            <img src="${branding.logo_url}" alt="Current logo" style="max-height: 40px; margin: 10px 0;">
+                        </div>
+                    `;
+                    log('✅ Current logo found and displayed', 'success');
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="warning">
+                            <h4>⚠️ No Logo Set</h4>
+                            <p>No logo is currently configured in the database.</p>
+                        </div>
+                    `;
+                    log('⚠️ No logo currently set', 'warning');
+                }
+            } catch (caughtError) {
+                log(`❌ Error checking logo: ${caughtError.message}`, 'error');
+            }
+        }
+
+        function testSidebarDisplay() {
+            log('Testing sidebar logo display...', 'info');
+            
+            // Check if sidebar logo element exists
+            const sidebarLogo = document.querySelector('.sidebar-logo, #sidebar-logo, .logo');
+            
+            if (sidebarLogo) {
+                log('✅ Sidebar logo element found', 'success');
+                log(`Element tag: ${sidebarLogo.tagName}`, 'info');
+                log(`Current src: ${sidebarLogo.src || 'No src attribute'}`, 'info');
+            } else {
+                log('❌ Sidebar logo element not found', 'error');
+                log('Expected selectors: .sidebar-logo, #sidebar-logo, .logo', 'info');
+            }
+        }
+
+        // Initialize
+        log('🔧 Debug tool initialized', 'info');
+        log('Select a logo file to begin validation testing', 'info');
+    </script>
+</body>
+</html>

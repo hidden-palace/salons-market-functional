@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Logo Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { background: #d4edda; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .info { background: #d1ecf1; border-left: 4px solid #17a2b8; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .logo-preview {
+            max-width: 200px;
+            max-height: 100px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+        }
+        .log-container {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Logo Debug Tool</h1>
+    
+    <div class="debug-section info">
+        <h3>📋 Current Logo Status</h3>
+        <div id="status">Loading...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🔍 Debug Actions</h3>
+        <button onclick="testAPI()">Test API Endpoint</button>
+        <button onclick="testLogoHandler()">Test Logo Handler</button>
+        <button onclick="refreshLogo()">Refresh Logo</button>
+        <button onclick="checkDOMElements()">Check DOM Elements</button>
+        <button onclick="clearLogs()">Clear Logs</button>
+        
+        <div id="debug-logs" class="log-container">
+            <div>🔧 Debug logs will appear here...</div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🎯 Logo Display Test</h3>
+        <div id="logo-test-area">
+            <!-- Test logo elements -->
+            <div class="company-logo">
+                <div class="logo-icon" style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #3b82f6; color: white; border-radius: 8px;">OR</div>
+                <img id="company-logo-img" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px;" alt="Company Logo">
+            </div>
+        </div>
+    </div>
+
+    <script src="/client-logo-handler.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const logs = document.getElementById('debug-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logs.innerHTML += `<div>[${timestamp}] ${icon} ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('debug-logs').innerHTML = '<div>🔧 Debug logs cleared...</div>';
+        }
+
+        async function testAPI() {
+            log('Testing API endpoint...', 'info');
+            try {
+                const response = await fetch('/api/branding');
+                const data = await response.json();
+                
+                log(`API Response Status: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`Logo URL: ${data.logo_url || 'NOT SET'}`, data.logo_url ? 'success' : 'warning');
+                log(`Full Response: ${JSON.stringify(data, null, 2)}`, 'info');
+                
+                document.getElementById('status').innerHTML = `
+                    <div class="${data.logo_url ? 'success' : 'warning'}">
+                        <h4>API Status: ${response.ok ? '✅ Working' : '❌ Failed'}</h4>
+                        <p><strong>Logo URL:</strong> ${data.logo_url || 'Not set in database'}</p>
+                        ${data.logo_url ? `<img src="${data.logo_url}" class="logo-preview" alt="Current logo">` : ''}
+                    </div>
+                `;
+            } catch (error) {
+                log(`API Error: ${error.message}`, 'error');
+                document.getElementById('status').innerHTML = `
+                    <div class="error">
+                        <h4>❌ API Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function testLogoHandler() {
+            log('Testing logo handler...', 'info');
+            
+            if (window.logoHandler) {
+                log('✅ Logo handler found', 'success');
+                const status = window.logoHandler.getLogoStatus();
+                log(`Logo Status: ${JSON.stringify(status, null, 2)}`, 'info');
+            } else {
+                log('❌ Logo handler not found', 'error');
+            }
+        }
+
+        function refreshLogo() {
+            log('Refreshing logo...', 'info');
+            if (window.logoHandler) {
+                window.logoHandler.refreshLogo();
+                log('✅ Logo refresh requested', 'success');
+            } else {
+                log('❌ Logo handler not available', 'error');
+            }
+        }
+
+        function checkDOMElements() {
+            log('Checking DOM elements...', 'info');
+            
+            const logoImg = document.getElementById('company-logo-img');
+            const logoIcon = document.querySelector('.logo-icon');
+            
+            log(`Logo image element: ${logoImg ? '✅ Found' : '❌ Not found'}`, logoImg ? 'success' : 'error');
+            log(`Fallback icon element: ${logoIcon ? '✅ Found' : '❌ Not found'}`, logoIcon ? 'success' : 'error');
+            
+            if (logoImg) {
+                log(`Logo img src: ${logoImg.src || 'empty'}`, 'info');
+                log(`Logo img display: ${logoImg.style.display || 'default'}`, 'info');
+            }
+            
+            if (logoIcon) {
+                log(`Logo icon display: ${logoIcon.style.display || 'default'}`, 'info');
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            log('🔧 Debug page loaded', 'info');
+            setTimeout(() => {
+                testAPI();
+            }, 1000);
+        });
+
+        // Listen for console logs from logo handler
+        const originalLog = console.log;
+        console.log = function(...args) {
+            if (args[0] && args[0].includes('🎨 Logo Handler:')) {
+                log(args.join(' '), 'info');
+            }
+            originalLog.apply(console, args);
+        };
+
+        const originalError = console.error;
+        console.error = function(...args) {
+            if (args[0] && args[0].includes('🎨 Logo Handler:')) {
+                log(args.join(' '), 'error');
+            }
+            originalError.apply(console, args);
+        };
+    </script>
+</body>
+</html>
