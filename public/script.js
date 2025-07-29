@@ -11,7 +11,7 @@ const employees = {
     name: 'AI Brenden',
     role: 'lead scraper',
     specialty: 'Lead Research Specialist',
-    avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/employee-avatars//brenden.jpeg',
     description: 'Expert data researcher specializing in B2B lead generation. I extract high-quality prospects from LinkedIn, Google Maps, and Yellow Pages with precision and attention to detail.',
     quickActions: [
       { icon: '🔍', text: 'Find florists in Los Angeles', action: 'Find florists in Los Angeles area' },
@@ -24,7 +24,7 @@ const employees = {
     name: 'AI Van',
     role: 'page operator',
     specialty: 'Digital Marketing Designer',
-    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/employee-avatars//Van.jpeg',
     description: 'Creative digital marketing specialist focused on landing page design and conversion optimization. I create compelling pages that turn visitors into customers.',
     quickActions: [
       { icon: '🎨', text: 'Create Valentine\'s page', action: 'Create a Valentine\'s Day landing page for flower sales' },
@@ -37,7 +37,7 @@ const employees = {
     name: 'AI Angel',
     role: 'voice caller',
     specialty: 'Voice Outreach Manager',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/employee-avatars//angel.jpeg',
     description: 'Professional voice outreach specialist for customer engagement and lead qualification. I handle phone campaigns with a personal touch.',
     quickActions: [
       { icon: '📞', text: 'Start call campaign', action: 'Start a voice outreach campaign for new leads' },
