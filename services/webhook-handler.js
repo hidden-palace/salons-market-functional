@@ -33,16 +33,26 @@ class WebhookHandler {
       throw new Error(`CRITICAL ERROR: Employee '${employeeId}' not found in configuration`);
     }
 
-    // Validate webhook configuration
-    if (!employeeConfig.webhookUrl || employeeConfig.webhookUrl.includes('placeholder')) {
-      throw new Error(`CRITICAL ERROR: Webhook URL not configured for ${employeeConfig.name}`);
+    // Validate tool-specific webhook configuration for the first tool call
+    const toolWebhooks = employeeConfig.toolWebhooks;
+    if (!toolWebhooks) {
+      throw new Error(`CRITICAL ERROR: 'toolWebhooks' object not found for ${employeeConfig.name}. Please configure it in config/index.js`);
+    }
+
+    if (!toolWebhooks || Object.keys(toolWebhooks).length === 0) {
+      throw new Error(`CRITICAL ERROR: No tool webhooks configured for ${employeeConfig.name}`);
+    }
+
+    const firstToolCallName = toolCalls[0]?.function?.name; // This line is for initial validation, not for routing
+    if (!toolWebhooks[firstToolCallName] || toolWebhooks[firstToolCallName].includes('placeholder')) {
+      throw new Error(`CRITICAL ERROR: Webhook URL not configured for tool '${firstToolCallName}' in ${employeeConfig.name}`);
     }
 
     console.log(`🎯 EMPLOYEE VALIDATION PASSED:`, {
       employeeId,
       employeeName: employeeConfig.name,
       employeeRole: employeeConfig.role,
-      webhookUrl: employeeConfig.webhookUrl,
+      toolWebhooks: Object.keys(toolWebhooks),
       threadId,
       runId,
       toolCallsCount: toolCalls.length
@@ -76,6 +86,17 @@ class WebhookHandler {
           JSON.parse(toolCall.function.arguments)
         );
 
+        const toolWebhookUrl = toolWebhooks[toolCall.function.name]; // Dynamically get webhook URL based on tool's function name
+        if (!toolWebhookUrl) {
+          throw new Error(`Webhook URL for tool '${toolCall.function.name}' is not configured for ${employeeConfig.name}. Please check 'toolWebhooks' in config/index.js`);
+        }
+
+        if (!toolWebhookUrl || toolWebhookUrl.includes('placeholder')) {
+          throw new Error(`Webhook URL for tool '${toolCall.function.name}' not configured for ${employeeConfig.name}`);
+        }
+
+        console.log(`🎯 Using webhook URL for tool '${toolCall.function.name}': ${toolWebhookUrl}`);
+
         // Prepare webhook payload with isolation metadata
         const payload = {
           tool_call_id: toolCall.id,
@@ -97,10 +118,10 @@ class WebhookHandler {
           toolCallId: toolCall.id,
           correlationKey: toolCallData.correlationKey,
           isolationKey: toolCallData.isolationKey,
-          webhookUrl: employeeConfig.webhookUrl
+          webhookUrl: toolWebhookUrl
         });
 
-        const result = await this.sendWebhookWithRetry(payload, employeeConfig.webhookUrl, employeeId);
+        const result = await this.sendWebhookWithRetry(payload, toolWebhookUrl, employeeId); // Use the specific tool's webhook URL
         results.push(result);
 
       } catch (err) {
@@ -127,7 +148,7 @@ class WebhookHandler {
    * Send webhook with enhanced error handling and isolation tracking
    */
   async sendWebhookWithRetry(payload, webhookUrl, employeeId, attempt = 1) {
-    const maxAttempts = this.retryAttempts;
+    const maxAttempts = this.retryAttempts; // This webhookUrl is now the specific tool's webhookUrl
     const employeeConfig = config.employees[employeeId];
     
     try {
