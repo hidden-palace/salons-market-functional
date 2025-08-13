@@ -7,8 +7,11 @@ const router = express.Router();
 let supabaseService;
 try {
   supabaseService = new SupabaseService();
+  console.log('✅ Supabase service for branding initialized successfully');
 } catch (error) {
-  console.error('Failed to initialize Supabase service:', error.message);
+  console.error('❌ Failed to initialize Supabase service for branding:', error.message);
+  console.error('   This usually means Supabase is not properly configured.');
+  console.error('   Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set correctly.');
 }
 
 /**

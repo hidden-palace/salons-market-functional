@@ -7,8 +7,11 @@ const router = express.Router();
 let leadProcessor;
 try {
   leadProcessor = new LeadProcessor();
+  console.log('✅ Lead processor initialized successfully');
 } catch (error) {
-  console.error('Failed to initialize lead processor:', error.message);
+  console.error('❌ Failed to initialize lead processor:', error.message);
+  console.error('   This usually means Supabase is not properly configured.');
+  console.error('   Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set correctly.');
 }
 
 /**

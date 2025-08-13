@@ -2,44 +2,35 @@ const { createClient } = require('@supabase/supabase-js');
 
 class SupabaseService {
   constructor() {
-    console.log('🔧 SUPABASE DEBUG: SupabaseService constructor called');
-    console.log('🔧 SUPABASE DEBUG: Constructor called at:', new Date().toISOString());
+    console.log('🔧 Initializing Supabase service...');
     
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
     
-    console.log('🔧 SUPABASE DEBUG: Environment check:');
-    console.log('   URL present:', !!supabaseUrl);
-    console.log('   Key present:', !!supabaseKey);
-    console.log('   URL starts with https:', supabaseUrl?.startsWith('https://'));
-    console.log('   Key starts with eyJ:', supabaseKey?.startsWith('eyJ'));
+    // Check for placeholder values or missing configuration
+    const hasValidUrl = supabaseUrl && 
+                       !supabaseUrl.includes('your-project-ref') && 
+                       !supabaseUrl.includes('your_supabase_project_url_here') &&
+                       supabaseUrl.startsWith('https://');
     
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('❌ SUPABASE DEBUG: Missing environment variables!');
+    const hasValidKey = supabaseKey && 
+                       !supabaseKey.includes('your-anon-key-here') && 
+                       !supabaseKey.includes('your_supabase_anon_key_here') &&
+                       supabaseKey.startsWith('eyJ');
+    
+    if (!hasValidUrl || !hasValidKey) {
+      console.error('❌ Supabase configuration missing or contains placeholder values!');
+      console.error('   Please update your .env file with actual Supabase credentials:');
+      console.error('   - VITE_SUPABASE_URL should be your actual Supabase project URL');
+      console.error('   - VITE_SUPABASE_ANON_KEY should be your actual anonymous key');
       throw new Error('Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
     }
     
     try {
-      console.log('🔧 SUPABASE DEBUG: Calling createClient...');
       this.client = createClient(supabaseUrl, supabaseKey);
-      console.log('✅ SUPABASE DEBUG: Supabase client created successfully');
-      
-      // Test the client immediately
-      console.log('🧪 SUPABASE DEBUG: Testing client connection...');
-      this.client.from('company_branding').select('count', { count: 'exact', head: true })
-        .then(({ error }) => {
-          if (error) {
-            console.error('❌ SUPABASE DEBUG: Client test failed:', error);
-          } else {
-            console.log('✅ SUPABASE DEBUG: Client test successful');
-          }
-        })
-        .catch(testError => {
-          console.error('❌ SUPABASE DEBUG: Client test exception:', testError);
-        });
-        
+      console.log('✅ Supabase client initialized successfully');
     } catch (initError) {
-      console.error('❌ SUPABASE DEBUG: Failed to create Supabase client:', initError);
+      console.error('❌ Failed to create Supabase client:', initError);
       throw new Error(`Failed to initialize Supabase client: ${initError.message}`);
     }
   }
