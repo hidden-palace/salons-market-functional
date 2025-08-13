@@ -2,7 +2,14 @@ const SupabaseService = require('./supabase-client');
 
 class LeadProcessor {
   constructor() {
-    this.supabaseService = new SupabaseService();
+    console.log('🔧 LeadProcessor: Initializing...');
+    try {
+      this.supabaseService = new SupabaseService();
+      console.log('✅ LeadProcessor: SupabaseService initialized successfully');
+    } catch (error) {
+      console.error('❌ LeadProcessor: Failed to initialize SupabaseService:', error.message);
+      throw new Error(`LeadProcessor initialization failed: ${error.message}`);
+    }
   }
 
   /**

@@ -2,10 +2,17 @@ const { createClient } = require('@supabase/supabase-js');
 
 class SupabaseService {
   constructor() {
-    console.log('🔧 Initializing Supabase service...');
+    console.log('🔧 SupabaseService: Starting initialization...');
     
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+    
+    console.log('🔧 SupabaseService: Environment check:', {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseKey,
+      urlPreview: supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'MISSING',
+      keyPreview: supabaseKey ? supabaseKey.substring(0, 20) + '...' : 'MISSING'
+    });
     
     // Check for placeholder values or missing configuration
     const hasValidUrl = supabaseUrl && 
@@ -19,19 +26,50 @@ class SupabaseService {
                        supabaseKey.startsWith('eyJ');
     
     if (!hasValidUrl || !hasValidKey) {
-      console.error('❌ Supabase configuration missing or contains placeholder values!');
-      console.error('   Please update your .env file with actual Supabase credentials:');
-      console.error('   - VITE_SUPABASE_URL should be your actual Supabase project URL');
-      console.error('   - VITE_SUPABASE_ANON_KEY should be your actual anonymous key');
-      throw new Error('Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
+      console.error('❌ SupabaseService: Invalid configuration detected');
+      console.error('   URL valid:', hasValidUrl, '- Value:', supabaseUrl);
+      console.error('   Key valid:', hasValidKey, '- Value preview:', supabaseKey ? supabaseKey.substring(0, 50) + '...' : 'MISSING');
+      
+      const errorMessage = [];
+      if (!hasValidUrl) {
+        errorMessage.push('VITE_SUPABASE_URL is missing or invalid (should start with https://)');
+      }
+      if (!hasValidKey) {
+        errorMessage.push('VITE_SUPABASE_ANON_KEY is missing or invalid (should start with eyJ)');
+      }
+      
+      throw new Error(`Supabase configuration error: ${errorMessage.join(', ')}`);
     }
     
     try {
       this.client = createClient(supabaseUrl, supabaseKey);
-      console.log('✅ Supabase client initialized successfully');
+      console.log('✅ SupabaseService: Client created successfully');
+      
+      // Test the connection
+      this.testConnection();
     } catch (initError) {
-      console.error('❌ Failed to create Supabase client:', initError);
+      console.error('❌ SupabaseService: Failed to create client:', initError);
       throw new Error(`Failed to initialize Supabase client: ${initError.message}`);
+    }
+  }
+
+  /**
+   * Test Supabase connection
+   */
+  async testConnection() {
+    try {
+      console.log('🧪 SupabaseService: Testing connection...');
+      const { data, error } = await this.client
+        .from('leads')
+        .select('count', { count: 'exact', head: true });
+      
+      if (error) {
+        console.warn('⚠️ SupabaseService: Connection test failed:', error.message);
+      } else {
+        console.log('✅ SupabaseService: Connection test successful');
+      }
+    } catch (testError) {
+      console.warn('⚠️ SupabaseService: Connection test error:', testError.message);
     }
   }
 

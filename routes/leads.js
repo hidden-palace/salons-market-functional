@@ -6,12 +6,17 @@ const router = express.Router();
 // Initialize lead processor
 let leadProcessor;
 try {
+  console.log('🔧 Leads Route: Attempting to initialize LeadProcessor...');
   leadProcessor = new LeadProcessor();
   console.log('✅ Lead processor initialized successfully');
 } catch (error) {
   console.error('❌ Failed to initialize lead processor:', error.message);
-  console.error('   This usually means Supabase is not properly configured.');
-  console.error('   Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set correctly.');
+  console.error('❌ Full error details:', error);
+  console.error('❌ This usually means:');
+  console.error('   1. Supabase credentials are missing or invalid in .env file');
+  console.error('   2. Supabase project is not accessible');
+  console.error('   3. Database tables are not created');
+  leadProcessor = null;
 }
 
 /**
