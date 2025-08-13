@@ -229,7 +229,7 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
       console.error('Services not initialized');
       return res.status(503).json({
         error: 'Service unavailable',
-        details: 'Required services are not properly configured. Please check your environment variables.'
+        details: 'Required services are not properly configured. Please check your .env file and ensure OPENAI_API_KEY, VITE_SUPABASE_URL, and VITE_SUPABASE_ANON_KEY are set correctly.'
       });
     }
 

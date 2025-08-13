@@ -19,20 +19,17 @@ try {
  */
 router.get('/', async (req, res, next) => {
   try {
-    console.log('🎨 GET /api/branding called');
-    
     if (!supabaseService) {
-      console.error('❌ Supabase service not initialized');
+      console.error('❌ Supabase service not initialized - missing environment configuration');
       return res.status(503).json({
         error: 'Service unavailable',
-        details: 'Supabase service is not properly configured.'
+        details: 'Supabase service is not properly configured. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set correctly.'
       });
     }
 
     // Fetch company logo and branding data from company_branding table
     let brandingData = null;
     try {
-      console.log('🔍 Querying company_branding table for logo data...');
       const { data, error } = await supabaseService.client
         .from('company_branding')
         .select('id, logo_url, created_at, updated_at')
@@ -41,12 +38,9 @@ router.get('/', async (req, res, next) => {
       
       if (!error && data) {
         brandingData = data;
-        console.log('✅ Logo data retrieved:', { hasLogo: !!data.logo_url, logoUrl: data.logo_url });
-      } else if (error) {
-        console.log('⚠️ Database query error:', error.message);
       }
     } catch (dbError) {
-      console.log('❌ Database query failed, using defaults:', dbError.message);
+      console.warn('⚠️ Database query failed, using defaults:', dbError.message);
     }
 
     // Use database data or fall back to defaults (no logo)
@@ -57,18 +51,12 @@ router.get('/', async (req, res, next) => {
       updated_at: new Date().toISOString()
     };
 
-    console.log('✅ Returning branding data:', { 
-      hasLogo: !!resultBranding.logo_url, 
-      logoUrl: resultBranding.logo_url,
-      timestamp: new Date().toISOString()
-    });
-    
     // Add cache headers for logo data
     res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes cache
     res.json(resultBranding);
 
   } catch (err) {
-    console.error('❌ Error fetching company branding data:', err);
+    console.error('❌ Error fetching company branding data:', err.message);
     res.status(500).json({
       error: 'Failed to fetch company logo',
       details: err.message,
