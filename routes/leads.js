@@ -19,19 +19,14 @@ try {
  */
 router.get('/', async (req, res, next) => {
   try {
-    console.log('🔍 LEADS DEBUG: Starting leads request...');
-    console.log('🔍 LEADS DEBUG: Request query params:', req.query);
-    
     if (!leadProcessor) {
-      console.error('❌ LEADS DEBUG: Lead processor not initialized');
+      console.error('❌ Lead processor not initialized - missing environment configuration');
       return res.status(503).json({
         error: 'Service unavailable',
-        details: 'Lead processor is not properly configured. Please check Supabase connection.'
+        details: 'Lead processor is not properly configured. Please check your .env file and ensure OPENAI_API_KEY, VITE_SUPABASE_URL, and VITE_SUPABASE_ANON_KEY are set correctly.'
       });
     }
 
-    console.log('✅ LEADS DEBUG: Lead processor is available');
-    
     const {
       source_platform,
       industry,
@@ -48,10 +43,6 @@ router.get('/', async (req, res, next) => {
       limit = 50
     } = req.query;
 
-    console.log('🔍 LEADS DEBUG: Parsed query parameters:', {
-      source_platform, industry, city, validated, outreach_sent, 
-      employee_id, min_score, date_from, date_to, sort, order, page, limit
-    });
 
     const filters = {};
     if (source_platform) filters.source_platform = source_platform;
@@ -68,45 +59,15 @@ router.get('/', async (req, res, next) => {
     filters.sort = sort;
     filters.order = order;
     
-    console.log('📊 LEADS DEBUG: Final filters object:', filters);
-    console.log('📊 LEADS DEBUG: Pagination params - page:', page, 'limit:', limit);
-    
-    console.log('🚀 LEADS DEBUG: Calling leadProcessor.getLeads...');
-    
     const result = await leadProcessor.getLeads(
       filters,
       parseInt(page),
       parseInt(limit)
     );
 
-    console.log('✅ LEADS DEBUG: Lead processor returned result:', {
-      totalLeads: result.leads?.length || 0,
-      totalCount: result.total,
-      page: result.page,
-      totalPages: result.totalPages
-    });
-    
-    if (result.leads && result.leads.length > 0) {
-      console.log('📋 LEADS DEBUG: First lead sample:', {
-        id: result.leads[0].id,
-        business_name: result.leads[0].business_name,
-        contact_name: result.leads[0].contact_name,
-        created_at: result.leads[0].created_at
-      });
-    } else {
-      console.log('⚠️ LEADS DEBUG: No leads found in result');
-    }
-    
     res.json(result);
   } catch (err) {
-    console.error('❌ LEADS DEBUG: Critical error in leads route:', err);
-    console.error('❌ LEADS DEBUG: Error timestamp:', new Date().toISOString());
-    console.error('❌ LEADS DEBUG: Error stack:', err.stack);
-    console.error('❌ LEADS DEBUG: Error message:', err.message);
-    console.error('❌ LEADS DEBUG: Error type:', err.constructor.name);
-    console.error('❌ LEADS DEBUG: Error name:', err.name);
-    console.error('❌ LEADS DEBUG: Full error object:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
-    console.error('❌ LEADS DEBUG: About to call next(err)');
+    console.error('❌ Error in leads route:', err.message);
     next(err);
   }
 });
