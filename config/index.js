@@ -20,6 +20,7 @@ const config = {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
     maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100
   },
+  maxChainDepth: parseInt(process.env.MAX_CHAIN_DEPTH) || 5, // Max number of assistant hops in a chain
   // AI Employee configurations with PRODUCTION webhook URLs
   employees: {
     brenden: {
@@ -27,21 +28,44 @@ const config = {
       name: 'AI Brenden',
       role: 'lead scraper',
       specialty: 'Lead Research Specialist',
-      webhookUrl: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e'
+      toolWebhooks: {
+        scrape_leads: 'https://pccommandcenter.app.n8n.cloud/webhook/705c06e4-c1d4-45b9-beeb-d2e6c98c0b5e',
+        name_to_binary: 'https://pccommandcenter.app.n8n.cloud/webhook-test/37fc5750-24c5-4da2-b145-c7ee92d13b94'
+      }
+      // chainsTo: 'van' // Example: Brenden chains to Van
     },
     van: {
       assistantId: 'asst_x0WhKHr61IUopNPR7A8No9kK',
       name: 'AI Van',
       role: 'page operator',
       specialty: 'Digital Marketing Designer',
-      webhookUrl: 'https://pccommandcenter.app.n8n.cloud/webhook/71791fd2-82db-423e-8a8a-47e90fbd16b9'
+      toolWebhooks: { // Use toolWebhooks object for multiple tools
+       capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/71791fd2-82db-423e-8a8a-47e90fbd16b9',
+        // Add other tools for Van here
+      }
+      // chainsTo: null // Example: Van does not chain further
     },
-    angel: {
-      assistantId: 'asst_angel_placeholder',
-      name: 'AI Angel',
-      role: 'voice caller',
+    rey: {
+      assistantId: 'asst_DDzLbSra46dq6WE5UvhCRK5v',
+      name: 'AI Rey',
+      role: 'Lead Generation Plan Strategist',
       specialty: 'Voice Outreach Manager',
-      webhookUrl: 'https://hook.eu2.make.com/angel_webhook_placeholder' // Add real webhook when ready
+      toolWebhooks: { // Use toolWebhooks object for multiple tools
+        get_competitor_insights: 'https://pccommandcenter.app.n8n.cloud/webhook-test/b072f9a9-c033-404a-8c8e-25b02bbd545a', // Add real webhook when ready
+        // Add other tools for Angel here
+      }
+      // chainsTo: null // Example: Angel does not chain further
+    },
+    xavier: {
+      assistantId: 'asst_6oDeBjbnFlAiagSEJDWHvBtl',
+      name: 'AI Xavier',
+      role: 'Content generation AI',
+      specialty: 'UGC Expert',
+      toolWebhooks: { // Use toolWebhooks object for multiple tools
+       capture_landing_page_requirements: 'https://pccommandcenter.app.n8n.cloud/webhook-test/29eabaa8-2d9a-401a-99e6-1b35afacbb8f',
+        // Add other tools for Van here
+      }
+      // chainsTo: null // Example: Van does not chain further
     }
     // EASILY ADD MORE EMPLOYEES HERE:
     // sarah: {
@@ -113,10 +137,17 @@ if (process.env.VITE_SUPABASE_ANON_KEY && !process.env.VITE_SUPABASE_ANON_KEY.st
 // Validate employee webhook URLs
 console.log('\n🔗 Employee Webhook Configuration:');
 Object.entries(config.employees).forEach(([key, employee]) => {
-  const isConfigured = employee.webhookUrl && !employee.webhookUrl.includes('placeholder');
-  const status = isConfigured ? '✅' : '⚠️';
-  const urlType = employee.webhookUrl.includes('webhook-test') ? '(TEST)' : '(PRODUCTION)';
-  console.log(`   ${status} ${employee.name}: ${employee.webhookUrl} ${isConfigured ? urlType : ''}`);
+  const hasToolWebhooks = employee.toolWebhooks && Object.keys(employee.toolWebhooks).length > 0;
+  const status = hasToolWebhooks ? '✅' : '⚠️';
+  console.log(`   ${status} ${employee.name}:`);
+  if (hasToolWebhooks) {
+    Object.entries(employee.toolWebhooks).forEach(([toolName, url]) => {
+      const urlType = url.includes('webhook-test') ? '(TEST)' : '(PRODUCTION)';
+      console.log(`     - Tool '${toolName}': ${url} ${url.includes('placeholder') ? '(PLACEHOLDER)' : urlType}`);
+    });
+  } else {
+    console.log(`     - No tool webhooks configured.`);
+  }
 });
 
 module.exports = config;
