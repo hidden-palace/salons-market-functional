@@ -13,12 +13,30 @@ let webhookHandler;
 let leadProcessor;
 
 try {
+  console.log('🔧 Assistant Route: Initializing OpenAI service...');
   openaiService = new OpenAIService();
-  webhookHandler = new WebhookHandler();
-  leadProcessor = new LeadProcessor();
+  console.log('✅ Assistant Route: OpenAI service initialized');
 } catch (error) {
-  console.error('Failed to initialize services:', error.message);
-  // Services will be null, and we'll handle this in the routes
+  console.error('❌ Assistant Route: Failed to initialize OpenAI service:', error.message);
+  openaiService = null;
+}
+
+try {
+  console.log('🔧 Assistant Route: Initializing webhook handler...');
+  webhookHandler = new WebhookHandler();
+  console.log('✅ Assistant Route: Webhook handler initialized');
+} catch (error) {
+  console.error('❌ Assistant Route: Failed to initialize webhook handler:', error.message);
+  webhookHandler = null;
+}
+
+try {
+  console.log('🔧 Assistant Route: Initializing lead processor...');
+  leadProcessor = new LeadProcessor();
+  console.log('✅ Assistant Route: Lead processor initialized');
+} catch (error) {
+  console.error('❌ Assistant Route: Failed to initialize lead processor:', error.message);
+  leadProcessor = null;
 }
 
 /**

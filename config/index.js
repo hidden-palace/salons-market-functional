@@ -3,6 +3,14 @@ const dotenv = require('dotenv');
 // Load environment variables
 dotenv.config();
 
+console.log('🔧 Config: Loading environment variables...');
+console.log('🔧 Config: NODE_ENV:', process.env.NODE_ENV);
+console.log('🔧 Config: Environment variables loaded:', {
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY ? 'SET' : 'MISSING',
+  VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL ? 'SET' : 'MISSING',
+  VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY ? 'SET' : 'MISSING'
+});
+
 const config = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
