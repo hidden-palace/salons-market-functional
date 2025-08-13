@@ -2,74 +2,45 @@ const { createClient } = require('@supabase/supabase-js');
 
 class SupabaseService {
   constructor() {
-    console.log('🔧 SupabaseService: Starting initialization...');
+    console.log('🔧 SUPABASE DEBUG: SupabaseService constructor called');
+    console.log('🔧 SUPABASE DEBUG: Constructor called at:', new Date().toISOString());
     
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
     
-    console.log('🔧 SupabaseService: Environment check:', {
-      hasUrl: !!supabaseUrl,
-      hasKey: !!supabaseKey,
-      urlPreview: supabaseUrl ? supabaseUrl.substring(0, 30) + '...' : 'MISSING',
-      keyPreview: supabaseKey ? supabaseKey.substring(0, 20) + '...' : 'MISSING'
-    });
+    console.log('🔧 SUPABASE DEBUG: Environment check:');
+    console.log('   URL present:', !!supabaseUrl);
+    console.log('   Key present:', !!supabaseKey);
+    console.log('   URL starts with https:', supabaseUrl?.startsWith('https://'));
+    console.log('   Key starts with eyJ:', supabaseKey?.startsWith('eyJ'));
     
-    // Check for placeholder values or missing configuration
-    const hasValidUrl = supabaseUrl && 
-                       !supabaseUrl.includes('your-project-ref') && 
-                       !supabaseUrl.includes('your_supabase_project_url_here') &&
-                       supabaseUrl.startsWith('https://');
-    
-    const hasValidKey = supabaseKey && 
-                       !supabaseKey.includes('your-anon-key-here') && 
-                       !supabaseKey.includes('your_supabase_anon_key_here') &&
-                       supabaseKey.startsWith('eyJ');
-    
-    if (!hasValidUrl || !hasValidKey) {
-      console.error('❌ SupabaseService: Invalid configuration detected');
-      console.error('   URL valid:', hasValidUrl, '- Value:', supabaseUrl);
-      console.error('   Key valid:', hasValidKey, '- Value preview:', supabaseKey ? supabaseKey.substring(0, 50) + '...' : 'MISSING');
-      
-      const errorMessage = [];
-      if (!hasValidUrl) {
-        errorMessage.push('VITE_SUPABASE_URL is missing or invalid (should start with https://)');
-      }
-      if (!hasValidKey) {
-        errorMessage.push('VITE_SUPABASE_ANON_KEY is missing or invalid (should start with eyJ)');
-      }
-      
-      throw new Error(`Supabase configuration error: ${errorMessage.join(', ')}`);
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('❌ SUPABASE DEBUG: Missing environment variables!');
+      throw new Error('Supabase configuration missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
     }
     
     try {
+      console.log('🔧 SUPABASE DEBUG: Calling createClient...');
       this.client = createClient(supabaseUrl, supabaseKey);
-      console.log('✅ SupabaseService: Client created successfully');
+      console.log('✅ SUPABASE DEBUG: Supabase client created successfully');
       
-      // Test the connection
-      this.testConnection();
+      // Test the client immediately
+      console.log('🧪 SUPABASE DEBUG: Testing client connection...');
+      this.client.from('company_branding').select('count', { count: 'exact', head: true })
+        .then(({ error }) => {
+          if (error) {
+            console.error('❌ SUPABASE DEBUG: Client test failed:', error);
+          } else {
+            console.log('✅ SUPABASE DEBUG: Client test successful');
+          }
+        })
+        .catch(testError => {
+          console.error('❌ SUPABASE DEBUG: Client test exception:', testError);
+        });
+        
     } catch (initError) {
-      console.error('❌ SupabaseService: Failed to create client:', initError);
+      console.error('❌ SUPABASE DEBUG: Failed to create Supabase client:', initError);
       throw new Error(`Failed to initialize Supabase client: ${initError.message}`);
-    }
-  }
-
-  /**
-   * Test Supabase connection
-   */
-  async testConnection() {
-    try {
-      console.log('🧪 SupabaseService: Testing connection...');
-      const { data, error } = await this.client
-        .from('leads')
-        .select('count', { count: 'exact', head: true });
-      
-      if (error) {
-        console.warn('⚠️ SupabaseService: Connection test failed:', error.message);
-      } else {
-        console.log('✅ SupabaseService: Connection test successful');
-      }
-    } catch (testError) {
-      console.warn('⚠️ SupabaseService: Connection test error:', testError.message);
     }
   }
 
