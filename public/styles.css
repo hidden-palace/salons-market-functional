@@ -16,12 +16,12 @@
   --text-primary: #1e293b;        /* Dark slate for base text */
   --text-secondary: #64748b;      /* Muted blue-grey for secondary text */
   --border-color: #e2e8f0;        /* Light border grey */
-  .header-actions {
+}
+.header-actions {
     display: flex;
     gap: 12px;
     align-items: center;
-    flex-shrink: 0;
-}
+    flex-shrink: 0; }
 
 /* App Container - Main Layout */
 .app-container {
